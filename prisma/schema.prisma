@@ -1,0 +1,29 @@
+datasource db {
+  provider = "postgresql"
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model User {
+  id        String   @id @default(cuid())
+  clerkId   String   @unique // Pour faire le lien avec l'authentification Clerk plus tard
+  email     String   @unique
+  name      String?
+  tjm       Float    @default(0) // Taux Journalier Moyen pour calculer les factures
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  logs      Log[]    // Relation un-à-plusieurs : un utilisateur a plusieurs logs
+}
+
+model Log {
+  id          String   @id @default(cuid())
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  rawText     String   // Le texte original ou la transcription audio envoyé par le freelance
+  projectName String   // Extrait par l'IA (ex: "Projet Nova")
+  category    String   // Extrait par l'IA (ex: "Dev", "Design", "Réunion")
+  duration    Float    // Extrait par l'IA (en heures, ex: 1.5 pour 1h30)
+  createdAt   DateTime @default(now())
+}
